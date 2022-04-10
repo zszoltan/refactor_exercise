@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
+use RefactorExercise\Repositories\InMemoryStockRepository;
+use RefactorExercise\Exceptions\InvalidJsonException;
 
 final class GetFulfillableOrdersTest extends TestCase
 {
@@ -72,6 +74,31 @@ final class GetFulfillableOrdersTest extends TestCase
         $this->assertCount(6, $fulfillableOrders);
         $this->checkOrderSort($fulfillableOrders);
     }
+
+
+    public function testStockCreateFromJsonAsExpect(): void
+    {
+        $stockRepository = InMemoryStockRepository::createFromJson('{"1":8,"2":4,"3":5}');
+        $items = $stockRepository->getAllItem();
+        $this->assertCount(3, $items);
+        $this->assertEquals(1,$items[0]->getProductId());
+        $this->assertEquals(8,$items[0]->getQuantity());
+        $this->assertEquals(2,$items[1]->getProductId());
+        $this->assertEquals(4,$items[1]->getQuantity());
+        $this->assertEquals(3,$items[2]->getProductId());
+        $this->assertEquals(5,$items[2]->getQuantity());
+        
+    }
+
+    public function testStockCreateFromJsonInvalidJson(): void
+    {
+        $this->expectException(InvalidJsonException::class);
+        $stockRepository = InMemoryStockRepository::createFromJson('{""1":8,"2":4,"3":5}');
+    }
+
+
+
+
 
     private function checkOrderSort(array $fulfillableOrders)
     {

@@ -4,7 +4,6 @@ namespace RefactorExercise;
 require '../vendor/autoload.php';
 
 use RefactorExercise\Exceptions\AmbiguousNumberOfParametersException;
-use RefactorExercise\Exceptions\InvalidJsonException;
 use Exception;
 use RefactorExercise\Repositories\InMemoryStockRepository;
 
@@ -13,11 +12,7 @@ try {
         throw new AmbiguousNumberOfParametersException($argc, $argv);
     }
     
-    if (($stockRaw = json_decode($argv[1])) == null) {
-        throw new InvalidJsonException($argv[1]);
-    }
-
-    $stockRepository = InMemoryStockRepository::createFromJson($stockRaw);
+    $stockRepository = InMemoryStockRepository::createFromJson($argv[1]);
 
     $orders = [];
     $ordersH = [];
