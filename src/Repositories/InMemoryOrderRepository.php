@@ -6,7 +6,7 @@ use RefactorExercise\Models\Order;
 
 class InMemoryOrderRepository extends InMemoryRepository implements IOrderRepository
 {
-    protected function __construct()
+    public function __construct()
     {
         parent::__construct();
     }
@@ -17,6 +17,10 @@ class InMemoryOrderRepository extends InMemoryRepository implements IOrderReposi
             $pc = -1 * ($a->getPriority() <=> $b->getPriority());
             return $pc == 0 ? $a->getCreatedAt() <=> $b->getCreatedAt() : $pc;
         });
+    }
+    public function insert(Order $order): void
+    {
+       $this->items []= $order;
     }
 
     public static function createFromCsv($csvHandle): InMemoryOrderRepository

@@ -10,21 +10,21 @@ final class GetFulfillableOrdersTest extends TestCase
 {
     public function testInvalidArgsNum(): void
     {
-        $output = shell_exec("php .\get_fulfillable_orders.php {\\\"1\\\":8,\\\"2\\\":4,\\\"3\\\":5} 2");
+        $output = shell_exec("php .\src\get_fulfillable_orders.php {\\\"1\\\":8,\\\"2\\\":4,\\\"3\\\":5} 2");
         $this->assertEquals('Ambiguous number of parameters!', $output);
     }
 
 
     public function testInvalidArgsNum2(): void
     {
-        $output = shell_exec("php .\get_fulfillable_orders.php");
+        $output = shell_exec("php .\src\get_fulfillable_orders.php");
         $this->assertEquals('Ambiguous number of parameters!', $output);
     }
 
 
     public function testInvalidJsonArgs(): void
     {
-        $output = shell_exec("php .\get_fulfillable_orders.php {1\\\":8,\\\"2\\\":4,\\\"3\\\":5}");
+        $output = shell_exec("php .\src\get_fulfillable_orders.php {1\\\":8,\\\"2\\\":4,\\\"3\\\":5}");
         $this->assertEquals('Invalid json!', $output);
     }
 
@@ -119,7 +119,7 @@ final class GetFulfillableOrdersTest extends TestCase
     {
         $json = json_encode($stock);
         $json = str_replace('"', '\\"', $json);
-        $output = shell_exec("php .\get_fulfillable_orders.php " . $json);
+        $output = shell_exec("php .\src\get_fulfillable_orders.php " . $json);
         return $this->convertOutput($output);
     }
 

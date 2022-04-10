@@ -1,13 +1,16 @@
 <?php
 
 namespace RefactorExercise;
-
-require '../vendor/autoload.php';
+require __DIR__.'\\../vendor/autoload.php';
 
 use Exception;
 use RefactorExercise\Exceptions\AmbiguousNumberOfParametersException;
 use RefactorExercise\Repositories\InMemoryOrderRepository;
 use RefactorExercise\Repositories\InMemoryStockRepository;
+use RefactorExercise\Services\OrderDataSourceProcessService;
+use RefactorExercise\Services\FulfillableOrdersService;
+use RefactorExercise\View\FulfillableOrdersView;
+use RefactorExercise\Core\CsvDataSource;
 
 try {
     if ($argc != 2) {
@@ -16,40 +19,18 @@ try {
 
     $stockRepository = InMemoryStockRepository::createFromJson($argv[1]);
 
-    $handle = fopen('orders.csv', 'r');
-
-    $orderRepository = InMemoryOrderRepository::createFromCsv($handle);
+    $orderRepository = new InMemoryOrderRepository();
+    $csvProcessService = new OrderDataSourceProcessService($orderRepository, new CsvDataSource(__DIR__.'\\orders.csv'));
+    $csvProcessService->process();
+    $ordersH = $csvProcessService->getCsvHeaders();
 
     $orderRepository->sort();
-    $ordersH = array('product_id', 'quantity', 'priority', 'created_at');
 
-    foreach ($ordersH as $h) {
-        echo str_pad($h, 20);
-    }
-    echo "\n";
-    foreach ($ordersH as $h) {
-        echo str_repeat('=', 20);
-    }
-    echo "\n";
-    foreach ($orderRepository as $item) {
-        $stock = $stockRepository->getItemByProductId($item->getProductId());
-        if ($stock != null && $stock->getQuantity() >= $item->getQuantity()) {
-            echo str_pad($item->getProductId(), 20);
-            echo str_pad($item->getQuantity(), 20);
-            $text = 'high';
-            if ($item->getPriority() == 1) {
-                $text = 'low';
-            } else {
-                if ($item->getPriority() == 2) {
-                    $text = 'medium';
-                }
-            }
-            echo str_pad($text, 20);
+    $fulfillableOrdersService = new FulfillableOrdersService($stockRepository,$orderRepository);
 
-            echo str_pad($item->getCreatedAt(), 20);
-        }
-        echo "\n";
-    }
+    $fulfillableOrdersView = new FulfillableOrdersView($ordersH,$fulfillableOrdersService->getFulfillableOrders());
+    $fulfillableOrdersView->render();
+
 } catch (Exception $e) {
     echo $e->getMessage();
     exit(1);
