@@ -6,16 +6,18 @@ require '../vendor/autoload.php';
 use RefactorExercise\Exceptions\AmbiguousNumberOfParametersException;
 use RefactorExercise\Exceptions\InvalidJsonException;
 use Exception;
-
+use RefactorExercise\Repositories\InMemoryStockRepository;
 
 try {
     if ($argc != 2) {
         throw new AmbiguousNumberOfParametersException($argc, $argv);
     }
     
-    if (($stock = json_decode($argv[1])) == null) {
+    if (($stockRaw = json_decode($argv[1])) == null) {
         throw new InvalidJsonException($argv[1]);
     }
+
+    $stockRepository = InMemoryStockRepository::createFromJson($stockRaw);
 
     $orders = [];
     $ordersH = [];
@@ -51,7 +53,8 @@ try {
     }
     echo "\n";
     foreach ($orders as $item) {
-        if ($stock->{$item['product_id']} >= $item['quantity']) {
+        $stock = $stockRepository->getItemByProductId($item['product_id']);
+        if ($stock != null && $stock->getQuantity() >= $item['quantity']) {
             foreach ($ordersH as $h) {
                 if ($h == 'priority') {
                     if ($item['priority'] == 1) {
