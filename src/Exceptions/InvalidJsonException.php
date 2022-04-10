@@ -2,9 +2,7 @@
 
 namespace RefactorExercise\Exceptions;
 
-use Exception;
-
-class InvalidJsonException extends Exception {
+class InvalidJsonException extends \Exception {
 
     protected $rawJson;
     protected $decodeErrorMessage;

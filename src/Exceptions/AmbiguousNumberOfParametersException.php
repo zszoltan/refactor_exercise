@@ -2,10 +2,8 @@
 
 namespace RefactorExercise\Exceptions;
 
-use Exception;
 
-
-class AmbiguousNumberOfParametersException extends Exception {
+class AmbiguousNumberOfParametersException extends \Exception {
     protected $numberOfParameters;
     protected $parameters;
     public function __construct($numberOfParameters, $parameters)
