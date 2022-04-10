@@ -1,43 +1,27 @@
 <?php
+
 namespace RefactorExercise;
 
 require '../vendor/autoload.php';
 
-use RefactorExercise\Exceptions\AmbiguousNumberOfParametersException;
 use Exception;
+use RefactorExercise\Exceptions\AmbiguousNumberOfParametersException;
+use RefactorExercise\Repositories\InMemoryOrderRepository;
 use RefactorExercise\Repositories\InMemoryStockRepository;
 
 try {
     if ($argc != 2) {
         throw new AmbiguousNumberOfParametersException($argc, $argv);
     }
-    
+
     $stockRepository = InMemoryStockRepository::createFromJson($argv[1]);
 
-    $orders = [];
-    $ordersH = [];
+    $handle = fopen('orders.csv', 'r');
 
-    $row = 1;
-    if (($handle = fopen('orders.csv', 'r')) !== false) {
-        while (($data = fgetcsv($handle)) !== false) {
-            if ($row == 1) {
-                $ordersH = $data;
-            } else {
-                $o = [];
-                for ($i = 0; $i < count($ordersH); $i++) {
-                    $o[$ordersH[$i]] = $data[$i];
-                }
-                $orders[] = $o;
-            }
-            $row++;
-        }
-        fclose($handle);
-    }
+    $orderRepository = InMemoryOrderRepository::createFromCsv($handle);
 
-    usort($orders, function ($a, $b) {
-        $pc = -1 * ($a['priority'] <=> $b['priority']);
-        return $pc == 0 ? $a['created_at'] <=> $b['created_at'] : $pc;
-    });
+    $orderRepository->sort();
+    $ordersH = array('product_id', 'quantity', 'priority', 'created_at');
 
     foreach ($ordersH as $h) {
         echo str_pad($h, 20);
@@ -47,27 +31,24 @@ try {
         echo str_repeat('=', 20);
     }
     echo "\n";
-    foreach ($orders as $item) {
-        $stock = $stockRepository->getItemByProductId($item['product_id']);
-        if ($stock != null && $stock->getQuantity() >= $item['quantity']) {
-            foreach ($ordersH as $h) {
-                if ($h == 'priority') {
-                    if ($item['priority'] == 1) {
-                        $text = 'low';
-                    } else {
-                        if ($item['priority'] == 2) {
-                            $text = 'medium';
-                        } else {
-                            $text = 'high';
-                        }
-                    }
-                    echo str_pad($text, 20);
-                } else {
-                    echo str_pad($item[$h], 20);
+    foreach ($orderRepository as $item) {
+        $stock = $stockRepository->getItemByProductId($item->getProductId());
+        if ($stock != null && $stock->getQuantity() >= $item->getQuantity()) {
+            echo str_pad($item->getProductId(), 20);
+            echo str_pad($item->getQuantity(), 20);
+            $text = 'high';
+            if ($item->getPriority() == 1) {
+                $text = 'low';
+            } else {
+                if ($item->getPriority() == 2) {
+                    $text = 'medium';
                 }
             }
-            echo "\n";
+            echo str_pad($text, 20);
+
+            echo str_pad($item->getCreatedAt(), 20);
         }
+        echo "\n";
     }
 } catch (Exception $e) {
     echo $e->getMessage();

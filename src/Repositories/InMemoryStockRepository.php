@@ -5,13 +5,11 @@ namespace RefactorExercise\Repositories;
 use RefactorExercise\Models\Stock;
 use RefactorExercise\Exceptions\InvalidJsonException;
 
-class InMemoryStockRepository
+class InMemoryStockRepository extends InMemoryRepository implements IStockRepository
 {
-    protected $items;
-
     protected function __construct()
     {
-        $this->items = [];
+        parent::__construct();
     }
 
     public function getItemByProductId($productId): Stock
@@ -22,10 +20,7 @@ class InMemoryStockRepository
         }
         return null;
     }
-    public function getAllItem() : array
-    {
-        return $this->items;
-    }
+
 
     public static function createFromJson($json) : InMemoryStockRepository
     {

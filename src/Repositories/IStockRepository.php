@@ -4,7 +4,7 @@ namespace RefactorExercise\Repositories;
 
 use RefactorExercise\Models\Stock;
 
-interface IStockRepository extends IRepository
+interface IStockRepository
 {
     function getItemByProductId($productId) : Stock;
 }
